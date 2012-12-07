@@ -1,4 +1,4 @@
-#require "rendezvous/version"
+require "rendezvous/version"
 
 require "openssl"
 require "socket"
