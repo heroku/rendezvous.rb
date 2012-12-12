@@ -75,7 +75,7 @@ class Rendezvous
       host, port, secret = uri.host, uri.port, uri.path[1..-1]
 
       ssl_context = OpenSSL::SSL::SSLContext.new
-      ssl_context.ca_file = File.expand_path("../data/cacert.pem", __FILE__)
+      ssl_context.ca_file = File.expand_path("../../data/cacert.pem", __FILE__)
       ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER
 
       Timeout.timeout(connect_timeout) do
