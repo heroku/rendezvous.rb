@@ -38,8 +38,20 @@ class Rendezvous
   def start
     begin
       `stty -icanon -echo` if input.isatty
+
+      if input.is_a?(StringIO)
+        input.each(DEFAULT_CHUNK_SIZE) do |chunk|
+          socket.write(chunk)
+          socket.flush
+        end
+
+        ios = [socket]
+      else
+        ios = [socket, input]
+      end
+
       loop do
-        if selected = IO.select([socket, input], nil, nil, activity_timeout)
+        if selected = IO.select(ios, nil, nil, activity_timeout)
           if selected.first.first == input
             socket.write(input.readpartial(DEFAULT_CHUNK_SIZE))
             socket.flush
