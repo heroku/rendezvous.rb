@@ -33,6 +33,7 @@ class Rendezvous
     @input            = options[:input] || $stdin
     @output           = options[:output] || $stdout
     @url              = options[:url]
+    @ssl_verify_peer  = options.fetch(:ssl_verify_peer, true)
   end
 
   def start
@@ -75,8 +76,13 @@ class Rendezvous
       host, port, secret = uri.host, uri.port, uri.path[1..-1]
 
       ssl_context = OpenSSL::SSL::SSLContext.new
-      ssl_context.ca_file = File.expand_path("../../data/cacert.pem", __FILE__)
-      ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER
+
+      if @ssl_verify_peer
+        ssl_context.ca_file = File.expand_path("../../data/cacert.pem", __FILE__)
+        ssl_context.verify_mode = OpenSSL::SSL::VERIFY_PEER
+      else
+        ssl_context.verify_mode = OpenSSL::SSL::VERIFY_NONE
+      end
 
       Timeout.timeout(connect_timeout) do
         tcp_socket = TCPSocket.open(host, port)
@@ -85,7 +91,7 @@ class Rendezvous
         ssl_socket.sync_close = true
 
         ssl_socket.hostname = host # SNI
-        ssl_socket.post_connection_check(host)
+        ssl_socket.post_connection_check(host) if @ssl_verify_peer
 
         ssl_socket.puts(secret)
         ssl_socket.readline
