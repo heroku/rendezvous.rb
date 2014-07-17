@@ -2,6 +2,7 @@ require "rendezvous/version"
 
 require "openssl"
 require "socket"
+require "timeout"
 require "uri"
 
 class Rendezvous
