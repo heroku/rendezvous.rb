@@ -45,6 +45,34 @@ Rendezvous.start(
 )
 ```
 
+
+The Rendezvous class reads and writes from `STDIN` and `STDOUT`.  If you want to manage that programatically, you can pass in other IO objects.
+
+```
+    rz = Rendezvous.new({input:StringIO.new, output:StringIO.new, url: data['rendezvous_url']})
+    rz.start
+    # log the output, remember to rewind so it can be read
+    rz.output.rewind
+    log.debug("Results:#{rz.output.readlines.join}")
+```
+
+Since the Rendezvous class uses blocking IO, you may want to wrap it in a Thread so your main thread can continue while data is being read.
+
+```
+Thread.new do
+  begin
+    # set an activity timeout so it doesn't block forever
+    rz = Rendezvous.new({input:StringIO.new, output:StringIO.new, url: data['rendezvous_url'], activity_timeout:300})
+    rz.start
+    # do something with output ...
+  rescue => e
+    log.error("Error capturing output for dyno\n#{e.message}")
+  end
+  
+  log.debug("completed capturing output for dyno")
+end
+```
+
 ## Contributing
 
 1. Fork it
