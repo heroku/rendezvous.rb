@@ -89,7 +89,13 @@ class Rendezvous
       host, port, secret = uri.host, uri.port, uri.path[1..-1]
 
       ssl_context = OpenSSL::SSL::SSLContext.new
-      ssl_context.ssl_version = :TLSv1
+
+      if ssl_context.respond_to?(:min_version=)
+        ssl_context.min_version = :TLS1
+        ssl_context.max_version = :TLS1_2
+      else
+        ssl_context.ssl_version = :TLSv1
+      end
 
       if @ssl_verify_peer
         ssl_context.ca_file = File.expand_path("../../data/cacert.pem", __FILE__)
